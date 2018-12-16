@@ -147,7 +147,7 @@ class Blob extends Base
             \GitPHP\Log::GetInstance()->SetEnabled(false);
 
     		// XXX: Nasty hack to cache headers
-            if (!$this->tpl->is_cached('blobheaders.tpl', $this->GetFullCacheKey())) {
+            if (!$this->tpl->isCached('blobheaders.tpl', $this->GetFullCacheKey())) {
                 if (isset($this->params['file'])) $saveas = $this->params['file'];
                 else $saveas = $this->params['hash'] . ".txt";
 

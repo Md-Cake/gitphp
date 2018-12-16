@@ -55,21 +55,18 @@ abstract class Base implements ControllerInterface
      */
     public function __construct()
     {
-        \GitPHP\Log::GetInstance()->timerStart();
-        require_once(\GitPHP_Util::AddSlash(\GitPHP\Config::GetInstance()->GetValue('smarty_prefix', 'lib/smarty/libs/')) . 'Smarty.class.php');
-        \GitPHP\Log::GetInstance()->timerStop('require Smarty.class.php');
         $this->tpl = new \Smarty;
-        $this->tpl->plugins_dir[] = GITPHP_INCLUDEDIR . 'smartyplugins';
-        $this->tpl->template_dir = GITPHP_TEMPLATESDIR;
+        $this->tpl->addPluginsDir(GITPHP_INCLUDEDIR . 'smartyplugins');
+        $this->tpl->addTemplateDir(GITPHP_TEMPLATESDIR);
 
         if (\GitPHP\Config::GetInstance()->GetValue('debug', false)) {
             $this->tpl->error_reporting = E_ALL;
         }
 
         if (\GitPHP\Config::GetInstance()->GetValue('cache', false)) {
-            $this->tpl->caching = 2;
+            $this->tpl->caching = \Smarty::CACHING_LIFETIME_SAVED;
             if (\GitPHP\Config::GetInstance()->HasKey('cachelifetime')) {
-                $this->tpl->cache_lifetime = \GitPHP\Config::GetInstance()->GetValue('cachelifetime');
+                $this->tpl->setCacheLifetime(\GitPHP\Config::GetInstance()->GetValue('cachelifetime'));
             }
 
             $servers = \GitPHP\Config::GetInstance()->GetValue('memcache', null);
@@ -77,6 +74,7 @@ abstract class Base implements ControllerInterface
                 require_once(GITPHP_CACHEDIR . 'Memcache.class.php');
                 \GitPHP_Memcache::GetInstance()->AddServers($servers);
                 require_once(GITPHP_CACHEDIR . 'memcache_cache_handler.php');
+                // todo????
                 $this->tpl->cache_handler_func = 'memcache_cache_handler';
             }
         }
@@ -381,7 +379,7 @@ abstract class Base implements ControllerInterface
         }
         \GitPHP\Log::GetInstance()->timerStop(__METHOD__ . ' cache', null);
 
-        if (!$this->tpl->is_cached($this->GetTemplate(), $this->GetFullCacheKey())) {
+        if (!$this->tpl->isCached($this->GetTemplate(), $this->GetFullCacheKey())) {
             \GitPHP\Log::GetInstance()->timerStart();
             $this->LoadCommonData();
             \GitPHP\Log::GetInstance()->timerStop(__METHOD__ . ' LoadCommonData', null);
@@ -406,7 +404,7 @@ abstract class Base implements ControllerInterface
     public function CacheExpire($expireAll = false)
     {
         if ($expireAll) {
-            $this->tpl->clear_all_cache();
+            $this->tpl->clearAllCache();
             return;
         }
 
@@ -417,8 +415,8 @@ abstract class Base implements ControllerInterface
 
         $age = $this->project->GetAge();
 
-        $this->tpl->clear_cache(null, $this->GetCacheKeyPrefix(), null, $age);
-        $this->tpl->clear_cache('projectlist.tpl', $this->GetCacheKeyPrefix(false), null, $age);
+        $this->tpl->clearCache(null, $this->GetCacheKeyPrefix(), null, $age);
+        $this->tpl->clearCache('projectlist.tpl', $this->GetCacheKeyPrefix(false), null, $age);
     }
 
     protected function initSession()

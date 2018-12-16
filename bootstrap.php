@@ -39,6 +39,8 @@ spl_autoload_register(
     }
 );
 
+require_once GITPHP_BASEDIR . "/vendor/autoload.php";
+
 class CountClass
 {
     protected $name, $value;
